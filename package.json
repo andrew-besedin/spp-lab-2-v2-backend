@@ -1,0 +1,32 @@
+{
+  "name": "kanban-backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx nodemon --exec \"npx tsx ./api/start.ts\"",
+    "start": "cross-env NODE_ENV=production npx tsx ./api/start.ts"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "cross-env": "^7.0.3",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "express-rate-limit": "^8.1.0",
+    "express-validator": "^7.2.1",
+    "nodemon": "^3.1.7",
+    "pg": "^8.13.1",
+    "sequelize": "^6.37.5",
+    "tsx": "^4.19.3",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.8",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/node": "^20",
+    "@types/pg": "^8.11.10",
+    "typescript": "^5"
+  }
+}
