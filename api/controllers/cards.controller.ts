@@ -1,11 +1,19 @@
 import { Request, Response } from "express";
 import { tryCatch } from "../utils/utils";
-import Card, { PRIORITIES } from "../schemes/Card";
+import sequelize from "../sequelize";
+import Card from "../schemes/Card";
 import Comment from "../schemes/Comment";
 import ActivityLog from "../schemes/ActivityLog";
 import User from "../schemes/User";
-import { canTransition, COLUMN_ORDER, ColumnStatus } from "../utils/columns";
+import { canTransition, COLUMN_ORDER } from "../utils/columns";
 import { logActivity, moveCard } from "../services/cards.service";
+import { CreateCardDto } from "../interfaces/cards/CreateCardDto";
+import { UpdateCardDto, UpdateCardParams } from "../interfaces/cards/UpdateCardDto";
+import { AddCommentDto, AddCommentParams } from "../interfaces/cards/AddCommentDto";
+import { GetCardParams } from "../interfaces/cards/GetCardDto";
+
+class CardNotFoundError extends Error {}
+class InvalidTransitionError extends Error {}
 
 const USER_ATTRIBUTES = ["id", "username", "displayName", "avatarUrl"];
 
@@ -40,7 +48,7 @@ class CardsController {
         res.status(200).json({ success: true, data: cards });
     });
 
-    get = tryCatch(async (req: Request, res: Response) => {
+    get = tryCatch<GetCardParams>(async (req, res) => {
         const card = await Card.findByPk(Number(req.params.id), { include: CARD_DETAIL_INCLUDE });
 
         if (!card) {
@@ -51,107 +59,124 @@ class CardsController {
         res.status(200).json({ success: true, data: card });
     });
 
-    create = tryCatch(async (req: Request, res: Response) => {
+    create = tryCatch<unknown, unknown, CreateCardDto>(async (req, res) => {
         const { title, description, priority, assigneeId } = req.body;
 
-        if (!title || typeof title !== "string") {
-            res.status(200).json({ success: false, data: "Title is required" });
-            return;
-        }
+        const cardId = await sequelize.transaction(async (transaction) => {
+            const lastInBacklog = await Card.count({ where: { status: "backlog" }, transaction });
 
-        if (priority && !PRIORITIES.includes(priority)) {
-            res.status(200).json({ success: false, data: "Invalid priority" });
-            return;
-        }
+            const card = await Card.create({
+                title,
+                description: description || "",
+                priority: priority || "medium",
+                status: "backlog",
+                position: lastInBacklog,
+                assigneeId: assigneeId || null,
+                creatorId: req.user!.id,
+            }, { transaction });
 
-        const lastInBacklog = await Card.count({ where: { status: "backlog" } });
+            await logActivity(card.id, req.user!.id, "created", undefined, transaction);
 
-        const card = await Card.create({
-            title,
-            description: description || "",
-            priority: priority || "medium",
-            status: "backlog",
-            position: lastInBacklog,
-            assigneeId: assigneeId || null,
-            creatorId: req.user!.id,
+            return card.id;
         });
 
-        await logActivity(card.id, req.user!.id, "created");
-
-        const result = await Card.findByPk(card.id, { include: CARD_INCLUDE });
+        const result = await Card.findByPk(cardId, { include: CARD_INCLUDE });
         res.status(200).json({ success: true, data: result });
     });
 
-    update = tryCatch(async (req: Request, res: Response) => {
-        const card = await Card.findByPk(Number(req.params.id));
-
-        if (!card) {
-            res.status(404).json({ success: false, data: "Card not found" });
-            return;
-        }
-
+    update = tryCatch<UpdateCardParams, unknown, UpdateCardDto>(async (req, res) => {
         const { title, description, priority, assigneeId, status, position } = req.body;
         const userId = req.user!.id;
 
-        if (priority !== undefined && priority !== card.priority) {
-            if (!PRIORITIES.includes(priority)) {
-                res.status(200).json({ success: false, data: "Invalid priority" });
+        let cardId: number | null = null;
+
+        try {
+            await sequelize.transaction(async (transaction) => {
+                const card = await Card.findByPk(Number(req.params.id), { transaction });
+
+                if (!card) {
+                    throw new CardNotFoundError();
+                }
+
+                if (priority !== undefined && priority !== card.priority) {
+                    await logActivity(card.id, userId, "priority_changed", { from: card.priority, to: priority }, transaction);
+                    card.priority = priority;
+                }
+
+                if (title !== undefined && title !== card.title) {
+                    await logActivity(card.id, userId, "title_changed", { from: card.title, to: title }, transaction);
+                    card.title = title;
+                }
+
+                if (description !== undefined && description !== card.description) {
+                    await logActivity(card.id, userId, "description_changed", { from: card.description, to: description }, transaction);
+                    card.description = description;
+                }
+
+                if (assigneeId !== undefined && assigneeId !== card.assigneeId) {
+                    await logActivity(card.id, userId, "assignee_changed", { from: card.assigneeId, to: assigneeId }, transaction);
+                    card.assigneeId = assigneeId;
+                }
+
+                await card.save({ transaction });
+
+                if (status !== undefined && status !== card.status) {
+                    if (!canTransition(card.status, status)) {
+                        throw new InvalidTransitionError();
+                    }
+
+                    await logActivity(card.id, userId, "status_changed", { from: card.status, to: status }, transaction);
+                    await moveCard(card, status, position ?? 0, transaction);
+                } else if (position !== undefined && position !== card.position) {
+                    await moveCard(card, card.status, position, transaction);
+                }
+
+                cardId = card.id;
+            });
+        } catch (err) {
+            if (err instanceof CardNotFoundError) {
+                res.status(404).json({ success: false, data: "Card not found" });
                 return;
             }
-            await logActivity(card.id, userId, "priority_changed", { from: card.priority, to: priority });
-            card.priority = priority;
-        }
 
-        if (title !== undefined && title !== card.title) {
-            await logActivity(card.id, userId, "title_changed", { from: card.title, to: title });
-            card.title = title;
-        }
-
-        if (description !== undefined && description !== card.description) {
-            await logActivity(card.id, userId, "description_changed", { from: card.description, to: description });
-            card.description = description;
-        }
-
-        if (assigneeId !== undefined && assigneeId !== card.assigneeId) {
-            await logActivity(card.id, userId, "assignee_changed", { from: card.assigneeId, to: assigneeId });
-            card.assigneeId = assigneeId;
-        }
-
-        await card.save();
-
-        if (status !== undefined && status !== card.status) {
-            if (!COLUMN_ORDER.includes(status as ColumnStatus) || !canTransition(card.status, status as ColumnStatus)) {
+            if (err instanceof InvalidTransitionError) {
                 res.status(200).json({ success: false, data: "Invalid column transition" });
                 return;
             }
 
-            await logActivity(card.id, userId, "status_changed", { from: card.status, to: status });
-            await moveCard(card, status as ColumnStatus, position ?? 0);
-        } else if (position !== undefined && position !== card.position) {
-            await moveCard(card, card.status, position);
+            throw err;
         }
 
-        const result = await Card.findByPk(card.id, { include: CARD_INCLUDE });
+        const result = await Card.findByPk(cardId!, { include: CARD_INCLUDE });
         res.status(200).json({ success: true, data: result });
     });
 
-    addComment = tryCatch(async (req: Request, res: Response) => {
-        const card = await Card.findByPk(Number(req.params.id));
-
-        if (!card) {
-            res.status(404).json({ success: false, data: "Card not found" });
-            return;
-        }
-
+    addComment = tryCatch<AddCommentParams, unknown, AddCommentDto>(async (req, res) => {
         const { body } = req.body;
 
-        if (!body || typeof body !== "string" || !body.trim()) {
-            res.status(200).json({ success: false, data: "Comment body is required" });
-            return;
+        let commentId: number | null = null;
+
+        try {
+            await sequelize.transaction(async (transaction) => {
+                const card = await Card.findByPk(Number(req.params.id), { transaction });
+
+                if (!card) {
+                    throw new CardNotFoundError();
+                }
+
+                const comment = await Comment.create({ cardId: card.id, userId: req.user!.id, body }, { transaction });
+                commentId = comment.id;
+            });
+        } catch (err) {
+            if (err instanceof CardNotFoundError) {
+                res.status(404).json({ success: false, data: "Card not found" });
+                return;
+            }
+
+            throw err;
         }
 
-        const comment = await Comment.create({ cardId: card.id, userId: req.user!.id, body });
-        const result = await Comment.findByPk(comment.id, {
+        const result = await Comment.findByPk(commentId!, {
             include: [{ model: User, as: "author", attributes: USER_ATTRIBUTES }],
         });
 

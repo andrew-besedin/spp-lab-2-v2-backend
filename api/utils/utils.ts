@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
 
-export function tryCatch(
-    fn: (req: Request, res: Response) => Promise<any>,
+export function tryCatch<P = unknown, ResBody = unknown, ReqBody = unknown, ReqQuery = unknown>(
+    fn: (req: Request<P, ResBody, ReqBody, ReqQuery>, res: Response) => Promise<any>,
     cleanup?: () => Promise<void>
 ) {
-    return async function (req: Request, res: Response) {
+    return async function (req: Request<P, ResBody, ReqBody, ReqQuery>, res: Response) {
         try {
             await fn(req, res);
         } catch (err) {

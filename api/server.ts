@@ -33,7 +33,6 @@ export async function startApp() {
 
     server.use(express.json());
     server.use(cookieParser());
-    server.use(middleware.validator);
     server.use(cors({ origin: true, credentials: true }));
     server.options("*", cors({ origin: true, credentials: true }));
 
