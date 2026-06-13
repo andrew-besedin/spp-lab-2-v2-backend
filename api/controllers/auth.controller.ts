@@ -6,7 +6,7 @@ import authService from "../services/auth.service";
 
 const COOKIE_OPTIONS = {
     httpOnly: true,
-    sameSite: "lax" as const,
+    sameSite: "strict" as const,
     maxAge: 7 * 24 * 60 * 60 * 1000,
 };
 
