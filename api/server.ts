@@ -30,7 +30,6 @@ export async function startApp() {
     await debugFn();
 
     const server = express();
-    server.set("trust proxy", 1);
 
     server.use(express.json());
     server.use(cookieParser());
