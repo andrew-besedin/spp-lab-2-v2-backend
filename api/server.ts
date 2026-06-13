@@ -9,6 +9,10 @@ import middleware from "./middleware";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import debugFn from "./debug";
+import "./schemes/associations";
+import authRouter from "./routes/auth.route";
+import cardsRouter from "./routes/cards.route";
+import usersRouter from "./routes/users.route";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -38,9 +42,9 @@ export async function startApp() {
     server.use("/api", apiServer);
     apiServer.use('/public', express.static(path.join(__dirname, "./public")));
 
-    // TODO: mount routers here, e.g.:
-    // import exampleRouter from "./routes/example.route";
-    // apiServer.use("/example", exampleRouter);
+    apiServer.use("/auth", authRouter);
+    apiServer.use("/cards", cardsRouter);
+    apiServer.use("/users", usersRouter);
 
     server.listen(envVars().PORT, () => {
         console.log(`> API server ready on http://localhost:${envVars().PORT}`);
