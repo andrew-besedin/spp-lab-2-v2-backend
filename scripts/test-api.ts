@@ -52,7 +52,7 @@ function check(name: string, condition: boolean, details?: unknown) {
 }
 
 function isValidationError(body: ApiBody) {
-    return body.success === false && body.data === "Validation error" && Array.isArray(body.errors);
+    return body.success === false && body.data === "VALIDATION_ERROR" && Array.isArray(body.errors);
 }
 
 async function testAuthGuards() {

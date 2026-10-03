@@ -15,7 +15,7 @@ class CardsController {
         const card = await cardsService.getDetail(Number(req.params.id));
 
         if (!card) {
-            res.status(404).json({ success: false, data: "Card not found" });
+            res.status(404).json({ success: false, data: "CARD_NOT_FOUND" });
             return;
         }
 
@@ -33,12 +33,12 @@ class CardsController {
             res.status(200).json({ success: true, data: card });
         } catch (err) {
             if (err instanceof CardNotFoundError) {
-                res.status(404).json({ success: false, data: "Card not found" });
+                res.status(404).json({ success: false, data: "CARD_NOT_FOUND" });
                 return;
             }
 
             if (err instanceof InvalidTransitionError) {
-                res.status(200).json({ success: false, data: "Invalid column transition" });
+                res.status(200).json({ success: false, data: "INVALID_TRANSITION" });
                 return;
             }
 
@@ -52,7 +52,7 @@ class CardsController {
             res.status(200).json({ success: true, data: comment });
         } catch (err) {
             if (err instanceof CardNotFoundError) {
-                res.status(404).json({ success: false, data: "Card not found" });
+                res.status(404).json({ success: false, data: "CARD_NOT_FOUND" });
                 return;
             }
 

@@ -11,7 +11,7 @@ export function tryCatch<P = unknown, ResBody = unknown, ReqBody = unknown, ReqQ
             console.log(err);
             res.status(500).send({
                 success: false,
-                data: err?.toString() || "Internal Server Error",
+                data: "INTERNAL_SERVER_ERROR",
             });
         } finally {
             cleanup && (await cleanup());

@@ -10,7 +10,7 @@ class Middleware {
         if (!errors.isEmpty()) {
             res.status(200).json({
                 success: false,
-                data: "Validation error",
+                data: "VALIDATION_ERROR",
                 errors: errors.array(),
             });
         } else {
@@ -23,14 +23,14 @@ class Middleware {
         const payload = token && verifyToken(token);
 
         if (!payload) {
-            res.status(401).json({ success: false, data: "Unauthorized" });
+            res.status(401).json({ success: false, data: "UNAUTHORIZED" });
             return;
         }
 
         const user = await User.findByPk(payload.id);
 
         if (!user) {
-            res.status(401).json({ success: false, data: "Unauthorized" });
+            res.status(401).json({ success: false, data: "UNAUTHORIZED" });
             return;
         }
 
