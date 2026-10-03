@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "npx nodemon --exec \"npx tsx ./api/start.ts\"",
     "start": "cross-env NODE_ENV=production npx tsx ./api/start.ts",
-    "test:api": "npx tsx ./scripts/test-api.ts"
+    "test:api": "npx tsx ./scripts/test-api.ts",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "eslint": "eslint . --ext .js,.ts,.tsx,.jsx,.cjs,.mjs --fix"
   },
   "dependencies": {
     "cookie-parser": "^1.4.7",
@@ -30,6 +33,7 @@
     "@types/jsonwebtoken": "^9.0.7",
     "@types/node": "^20",
     "@types/pg": "^8.11.10",
+    "eslint-config-jejolare": "^3.1.0",
     "typescript": "^5"
   }
 }
