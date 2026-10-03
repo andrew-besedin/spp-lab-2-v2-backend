@@ -20,7 +20,7 @@ class AuthController {
         const user = code ? await authService.authenticateWithGithubCode(code) : null;
 
         if (!user) {
-            res.redirect(envVars().FRONTEND_URL);
+            res.redirect(`${envVars().FRONTEND_URL}/login?error=GITHUB_AUTH_FAILED`);
             return;
         }
 
