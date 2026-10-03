@@ -1,9 +1,15 @@
-import { Model, DataTypes, InferAttributes, InferCreationAttributes, CreationOptional } from "sequelize";
-import sequelize from "../sequelize";
-import { COLUMN_ORDER, ColumnStatus } from "../utils/columns";
+import {
+    Model,
+    DataTypes,
+    InferAttributes,
+    InferCreationAttributes,
+    CreationOptional,
+} from 'sequelize';
+import sequelize from '../sequelize';
+import { COLUMN_ORDER, ColumnStatus } from '../utils/columns';
 
-export const PRIORITIES = ["low", "medium", "high", "urgent"] as const;
-export type Priority = typeof PRIORITIES[number];
+export const PRIORITIES = ['low', 'medium', 'high', 'urgent'] as const;
+export type Priority = (typeof PRIORITIES)[number];
 
 class Card extends Model<InferAttributes<Card>, InferCreationAttributes<Card>> {
     declare id: CreationOptional<number>;
@@ -32,17 +38,17 @@ Card.init(
         description: {
             type: DataTypes.TEXT,
             allowNull: false,
-            defaultValue: "",
+            defaultValue: '',
         },
         priority: {
             type: DataTypes.ENUM(...PRIORITIES),
             allowNull: false,
-            defaultValue: "medium",
+            defaultValue: 'medium',
         },
         status: {
             type: DataTypes.ENUM(...COLUMN_ORDER),
             allowNull: false,
-            defaultValue: "backlog",
+            defaultValue: 'backlog',
         },
         position: {
             type: DataTypes.INTEGER,
@@ -62,9 +68,9 @@ Card.init(
     },
     {
         sequelize,
-        modelName: "Card",
-        tableName: "cards",
-    }
+        modelName: 'Card',
+        tableName: 'cards',
+    },
 );
 
 export default Card;

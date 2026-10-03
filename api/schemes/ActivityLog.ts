@@ -1,17 +1,26 @@
-import { Model, DataTypes, InferAttributes, InferCreationAttributes, CreationOptional } from "sequelize";
-import sequelize from "../sequelize";
+import {
+    Model,
+    DataTypes,
+    InferAttributes,
+    InferCreationAttributes,
+    CreationOptional,
+} from 'sequelize';
+import sequelize from '../sequelize';
 
 export const ACTIVITY_ACTIONS = [
-    "created",
-    "title_changed",
-    "description_changed",
-    "priority_changed",
-    "assignee_changed",
-    "status_changed",
+    'created',
+    'title_changed',
+    'description_changed',
+    'priority_changed',
+    'assignee_changed',
+    'status_changed',
 ] as const;
-export type ActivityAction = typeof ACTIVITY_ACTIONS[number];
+export type ActivityAction = (typeof ACTIVITY_ACTIONS)[number];
 
-class ActivityLog extends Model<InferAttributes<ActivityLog>, InferCreationAttributes<ActivityLog>> {
+class ActivityLog extends Model<
+    InferAttributes<ActivityLog>,
+    InferCreationAttributes<ActivityLog>
+> {
     declare id: CreationOptional<number>;
     declare cardId: number;
     declare userId: number;
@@ -49,9 +58,9 @@ ActivityLog.init(
     },
     {
         sequelize,
-        modelName: "ActivityLog",
-        tableName: "activity_logs",
-    }
+        modelName: 'ActivityLog',
+        tableName: 'activity_logs',
+    },
 );
 
 export default ActivityLog;

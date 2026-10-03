@@ -1,5 +1,11 @@
-import { Model, DataTypes, InferAttributes, InferCreationAttributes, CreationOptional } from "sequelize";
-import sequelize from "../sequelize";
+import {
+    Model,
+    DataTypes,
+    InferAttributes,
+    InferCreationAttributes,
+    CreationOptional,
+} from 'sequelize';
+import sequelize from '../sequelize';
 
 class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
     declare id: CreationOptional<number>;
@@ -36,9 +42,9 @@ User.init(
     },
     {
         sequelize,
-        modelName: "User",
-        tableName: "users",
-    }
+        modelName: 'User',
+        tableName: 'users',
+    },
 );
 
 export default User;

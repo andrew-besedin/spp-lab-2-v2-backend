@@ -1,5 +1,11 @@
-import { Model, DataTypes, InferAttributes, InferCreationAttributes, CreationOptional } from "sequelize";
-import sequelize from "../sequelize";
+import {
+    Model,
+    DataTypes,
+    InferAttributes,
+    InferCreationAttributes,
+    CreationOptional,
+} from 'sequelize';
+import sequelize from '../sequelize';
 
 class Comment extends Model<InferAttributes<Comment>, InferCreationAttributes<Comment>> {
     declare id: CreationOptional<number>;
@@ -34,9 +40,9 @@ Comment.init(
     },
     {
         sequelize,
-        modelName: "Comment",
-        tableName: "comments",
-    }
+        modelName: 'Comment',
+        tableName: 'comments',
+    },
 );
 
 export default Comment;

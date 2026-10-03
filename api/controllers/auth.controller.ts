@@ -1,12 +1,12 @@
-import { Request, Response } from "express";
-import { tryCatch } from "../utils/utils";
-import { signToken } from "../utils/jwt";
-import envVars from "../utils/envVars";
-import authService from "../services/auth.service";
+import { Request, Response } from 'express';
+import { tryCatch } from '../utils/utils';
+import { signToken } from '../utils/jwt';
+import envVars from '../utils/envVars';
+import authService from '../services/auth.service';
 
 const COOKIE_OPTIONS = {
     httpOnly: true,
-    sameSite: "strict" as const,
+    sameSite: 'strict' as const,
     maxAge: 7 * 24 * 60 * 60 * 1000,
 };
 
@@ -25,7 +25,7 @@ class AuthController {
         }
 
         const token = signToken({ id: user.id });
-        res.cookie("token", token, COOKIE_OPTIONS);
+        res.cookie('token', token, COOKIE_OPTIONS);
         res.redirect(envVars().FRONTEND_URL);
     });
 
@@ -34,7 +34,7 @@ class AuthController {
     });
 
     logout = tryCatch(async (req: Request, res: Response) => {
-        res.clearCookie("token");
+        res.clearCookie('token');
         res.status(200).json({ success: true, data: null });
     });
 }

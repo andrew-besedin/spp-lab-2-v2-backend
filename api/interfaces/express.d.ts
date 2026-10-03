@@ -1,4 +1,4 @@
-import User from "../schemes/User";
+import User from '../schemes/User';
 
 declare global {
     namespace Express {

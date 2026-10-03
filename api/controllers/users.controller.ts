@@ -1,6 +1,6 @@
-import { Request, Response } from "express";
-import { tryCatch } from "../utils/utils";
-import usersService from "../services/users.service";
+import { Request, Response } from 'express';
+import { tryCatch } from '../utils/utils';
+import usersService from '../services/users.service';
 
 class UsersController {
     list = tryCatch(async (req: Request, res: Response) => {

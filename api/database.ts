@@ -1,5 +1,5 @@
-import "dotenv/config";
-import pg from "pg";
+import 'dotenv/config';
+import pg from 'pg';
 
 const isSocket = !!process.env.PGHOST?.startsWith('/cloudsql/');
 
@@ -10,8 +10,8 @@ async function initdb() {
         user: process.env.PGUSER,
         password: process.env.PGPASSWORD,
         host: process.env.PGHOST,
-        database: "postgres",
-        port: parseInt(process.env.PGPORT || "5432", 10),
+        database: 'postgres',
+        port: parseInt(process.env.PGPORT || '5432', 10),
         keepAlive: true,
         idleTimeoutMillis: 0,
         max: 100,
@@ -21,8 +21,8 @@ async function initdb() {
     try {
         await pool.query(`CREATE DATABASE "${process.env.PGDATABASE}" `);
     } catch (error: any) {
-        if (error.code === "42P04") {
-            console.log("Database already exists, skipping creation");
+        if (error.code === '42P04') {
+            console.log('Database already exists, skipping creation');
         } else {
             throw error;
         }

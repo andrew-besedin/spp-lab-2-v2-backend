@@ -1,9 +1,9 @@
-import cardsService, { CardNotFoundError, InvalidTransitionError } from "../services/cards.service";
-import { CreateCardDto } from "../interfaces/cards/CreateCardDto";
-import { UpdateCardDto, UpdateCardParams } from "../interfaces/cards/UpdateCardDto";
-import { AddCommentDto, AddCommentParams } from "../interfaces/cards/AddCommentDto";
-import { GetCardParams } from "../interfaces/cards/GetCardDto";
-import { tryCatch } from "../utils/utils";
+import cardsService, { CardNotFoundError, InvalidTransitionError } from '../services/cards.service';
+import { CreateCardDto } from '../interfaces/cards/CreateCardDto';
+import { UpdateCardDto, UpdateCardParams } from '../interfaces/cards/UpdateCardDto';
+import { AddCommentDto, AddCommentParams } from '../interfaces/cards/AddCommentDto';
+import { GetCardParams } from '../interfaces/cards/GetCardDto';
+import { tryCatch } from '../utils/utils';
 
 class CardsController {
     list = tryCatch(async (req, res) => {
@@ -15,7 +15,7 @@ class CardsController {
         const card = await cardsService.getDetail(Number(req.params.id));
 
         if (!card) {
-            res.status(404).json({ success: false, data: "CARD_NOT_FOUND" });
+            res.status(404).json({ success: false, data: 'CARD_NOT_FOUND' });
             return;
         }
 
@@ -33,12 +33,12 @@ class CardsController {
             res.status(200).json({ success: true, data: card });
         } catch (err) {
             if (err instanceof CardNotFoundError) {
-                res.status(404).json({ success: false, data: "CARD_NOT_FOUND" });
+                res.status(404).json({ success: false, data: 'CARD_NOT_FOUND' });
                 return;
             }
 
             if (err instanceof InvalidTransitionError) {
-                res.status(200).json({ success: false, data: "INVALID_TRANSITION" });
+                res.status(200).json({ success: false, data: 'INVALID_TRANSITION' });
                 return;
             }
 
@@ -48,11 +48,15 @@ class CardsController {
 
     addComment = tryCatch<AddCommentParams, unknown, AddCommentDto>(async (req, res) => {
         try {
-            const comment = await cardsService.addComment(Number(req.params.id), req.user!.id, req.body.body);
+            const comment = await cardsService.addComment(
+                Number(req.params.id),
+                req.user!.id,
+                req.body.body,
+            );
             res.status(200).json({ success: true, data: comment });
         } catch (err) {
             if (err instanceof CardNotFoundError) {
-                res.status(404).json({ success: false, data: "CARD_NOT_FOUND" });
+                res.status(404).json({ success: false, data: 'CARD_NOT_FOUND' });
                 return;
             }
 

@@ -1,34 +1,34 @@
-import { Transaction } from "sequelize";
-import sequelize from "../sequelize";
-import Card from "../schemes/Card";
-import Comment from "../schemes/Comment";
-import ActivityLog, { ActivityAction } from "../schemes/ActivityLog";
-import User from "../schemes/User";
-import { canTransition, ColumnStatus, COLUMN_ORDER } from "../utils/columns";
-import { CreateCardDto } from "../interfaces/cards/CreateCardDto";
-import { UpdateCardDto } from "../interfaces/cards/UpdateCardDto";
+import { Transaction } from 'sequelize';
+import sequelize from '../sequelize';
+import Card from '../schemes/Card';
+import Comment from '../schemes/Comment';
+import ActivityLog, { ActivityAction } from '../schemes/ActivityLog';
+import User from '../schemes/User';
+import { canTransition, ColumnStatus, COLUMN_ORDER } from '../utils/columns';
+import { CreateCardDto } from '../interfaces/cards/CreateCardDto';
+import { UpdateCardDto } from '../interfaces/cards/UpdateCardDto';
 
 export class CardNotFoundError extends Error {}
 export class InvalidTransitionError extends Error {}
 
-const USER_ATTRIBUTES = ["id", "username", "displayName", "avatarUrl"];
+const USER_ATTRIBUTES = ['id', 'username', 'displayName', 'avatarUrl'];
 
 const CARD_INCLUDE = [
-    { model: User, as: "assignee", attributes: USER_ATTRIBUTES },
-    { model: User, as: "creator", attributes: USER_ATTRIBUTES },
+    { model: User, as: 'assignee', attributes: USER_ATTRIBUTES },
+    { model: User, as: 'creator', attributes: USER_ATTRIBUTES },
 ];
 
 const CARD_DETAIL_INCLUDE = [
     ...CARD_INCLUDE,
     {
         model: Comment,
-        as: "comments",
-        include: [{ model: User, as: "author", attributes: USER_ATTRIBUTES }],
+        as: 'comments',
+        include: [{ model: User, as: 'author', attributes: USER_ATTRIBUTES }],
     },
     {
         model: ActivityLog,
-        as: "activityLog",
-        include: [{ model: User, as: "author", attributes: USER_ATTRIBUTES }],
+        as: 'activityLog',
+        include: [{ model: User, as: 'author', attributes: USER_ATTRIBUTES }],
     },
 ];
 
@@ -38,7 +38,7 @@ class CardsService {
         userId: number,
         action: ActivityAction,
         meta?: Record<string, unknown>,
-        transaction?: Transaction
+        transaction?: Transaction,
     ) {
         return ActivityLog.create({ cardId, userId, action, meta: meta ?? null }, { transaction });
     }
@@ -47,13 +47,18 @@ class CardsService {
      * Moves a card to (possibly) a new column and position, reindexing affected
      * columns to sequential positions starting at 0.
      */
-    private async moveCard(card: Card, newStatus: ColumnStatus, newIndex: number, transaction?: Transaction) {
+    private async moveCard(
+        card: Card,
+        newStatus: ColumnStatus,
+        newIndex: number,
+        transaction?: Transaction,
+    ) {
         const oldStatus = card.status;
 
         if (oldStatus === newStatus) {
             const siblings = await Card.findAll({
                 where: { status: oldStatus },
-                order: [["position", "ASC"]],
+                order: [['position', 'ASC']],
                 transaction,
             });
 
@@ -61,16 +66,18 @@ class CardsService {
             const clampedIndex = Math.max(0, Math.min(newIndex, reordered.length));
             reordered.splice(clampedIndex, 0, card);
 
-            await Promise.all(reordered.map((c, index) => c.update({ position: index }, { transaction })));
+            await Promise.all(
+                reordered.map((c, index) => c.update({ position: index }, { transaction })),
+            );
         } else {
             const sourceSiblings = await Card.findAll({
                 where: { status: oldStatus },
-                order: [["position", "ASC"]],
+                order: [['position', 'ASC']],
                 transaction,
             });
             const destSiblings = await Card.findAll({
                 where: { status: newStatus },
-                order: [["position", "ASC"]],
+                order: [['position', 'ASC']],
                 transaction,
             });
 
@@ -79,8 +86,12 @@ class CardsService {
             destSiblings.splice(clampedIndex, 0, card);
 
             await card.update({ status: newStatus }, { transaction });
-            await Promise.all(remainingSource.map((c, index) => c.update({ position: index }, { transaction })));
-            await Promise.all(destSiblings.map((c, index) => c.update({ position: index }, { transaction })));
+            await Promise.all(
+                remainingSource.map((c, index) => c.update({ position: index }, { transaction })),
+            );
+            await Promise.all(
+                destSiblings.map((c, index) => c.update({ position: index }, { transaction })),
+            );
         }
 
         await card.reload({ transaction });
@@ -105,19 +116,22 @@ class CardsService {
         const { title, description, priority, assigneeId } = data;
 
         const cardId = await sequelize.transaction(async (transaction) => {
-            const lastInBacklog = await Card.count({ where: { status: "backlog" }, transaction });
+            const lastInBacklog = await Card.count({ where: { status: 'backlog' }, transaction });
 
-            const card = await Card.create({
-                title,
-                description: description || "",
-                priority: priority || "medium",
-                status: "backlog",
-                position: lastInBacklog,
-                assigneeId: assigneeId || null,
-                creatorId: userId,
-            }, { transaction });
+            const card = await Card.create(
+                {
+                    title,
+                    description: description || '',
+                    priority: priority || 'medium',
+                    status: 'backlog',
+                    position: lastInBacklog,
+                    assigneeId: assigneeId || null,
+                    creatorId: userId,
+                },
+                { transaction },
+            );
 
-            await this.logActivity(card.id, userId, "created", undefined, transaction);
+            await this.logActivity(card.id, userId, 'created', undefined, transaction);
 
             return card.id;
         });
@@ -136,22 +150,46 @@ class CardsService {
             }
 
             if (priority !== undefined && priority !== card.priority) {
-                await this.logActivity(card.id, userId, "priority_changed", { from: card.priority, to: priority }, transaction);
+                await this.logActivity(
+                    card.id,
+                    userId,
+                    'priority_changed',
+                    { from: card.priority, to: priority },
+                    transaction,
+                );
                 card.priority = priority;
             }
 
             if (title !== undefined && title !== card.title) {
-                await this.logActivity(card.id, userId, "title_changed", { from: card.title, to: title }, transaction);
+                await this.logActivity(
+                    card.id,
+                    userId,
+                    'title_changed',
+                    { from: card.title, to: title },
+                    transaction,
+                );
                 card.title = title;
             }
 
             if (description !== undefined && description !== card.description) {
-                await this.logActivity(card.id, userId, "description_changed", { from: card.description, to: description }, transaction);
+                await this.logActivity(
+                    card.id,
+                    userId,
+                    'description_changed',
+                    { from: card.description, to: description },
+                    transaction,
+                );
                 card.description = description;
             }
 
             if (assigneeId !== undefined && assigneeId !== card.assigneeId) {
-                await this.logActivity(card.id, userId, "assignee_changed", { from: card.assigneeId, to: assigneeId }, transaction);
+                await this.logActivity(
+                    card.id,
+                    userId,
+                    'assignee_changed',
+                    { from: card.assigneeId, to: assigneeId },
+                    transaction,
+                );
                 card.assigneeId = assigneeId;
             }
 
@@ -162,7 +200,13 @@ class CardsService {
                     throw new InvalidTransitionError();
                 }
 
-                await this.logActivity(card.id, userId, "status_changed", { from: card.status, to: status }, transaction);
+                await this.logActivity(
+                    card.id,
+                    userId,
+                    'status_changed',
+                    { from: card.status, to: status },
+                    transaction,
+                );
                 await this.moveCard(card, status, position ?? 0, transaction);
             } else if (position !== undefined && position !== card.position) {
                 await this.moveCard(card, card.status, position, transaction);
@@ -182,12 +226,15 @@ class CardsService {
                 throw new CardNotFoundError();
             }
 
-            const comment = await Comment.create({ cardId: card.id, userId, body }, { transaction });
+            const comment = await Comment.create(
+                { cardId: card.id, userId, body },
+                { transaction },
+            );
             return comment.id;
         });
 
         return Comment.findByPk(commentId, {
-            include: [{ model: User, as: "author", attributes: USER_ATTRIBUTES }],
+            include: [{ model: User, as: 'author', attributes: USER_ATTRIBUTES }],
         });
     }
 }
