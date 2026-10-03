@@ -17,11 +17,11 @@ export interface UpdateCardDto {
 }
 
 export const updateCardValidation = [
-    param("id").isInt().toInt(),
-    body("title").optional().isString().trim().notEmpty(),
-    body("description").optional().isString(),
+    param("id").isInt({ min: 1, max: 2147483647 }).toInt(),
+    body("title").optional().isString().trim().isLength({ min: 1, max: 255 }),
+    body("description").optional().isString().isLength({ min: 0, max: 5000 }),
     body("priority").optional().isIn(PRIORITIES),
-    body("assigneeId").optional({ nullable: true }).isInt().toInt(),
+    body("assigneeId").optional({ nullable: true }).isInt({ min: 1, max: 2147483647 }).toInt(),
     body("status").optional().isIn(COLUMN_ORDER),
-    body("position").optional().isInt().toInt(),
+    body("position").optional().isInt({ min: 0, max: 2147483647 }).toInt(),
 ];

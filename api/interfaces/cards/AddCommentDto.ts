@@ -10,6 +10,6 @@ export interface AddCommentDto {
 }
 
 export const addCommentValidation = [
-    param("id").isInt().toInt(),
-    body("body").isString().trim().notEmpty(),
+    param("id").isInt({ min: 1, max: 2147483647 }).toInt(),
+    body("body").isString().trim().isLength({ min: 1, max: 2000 }),
 ];

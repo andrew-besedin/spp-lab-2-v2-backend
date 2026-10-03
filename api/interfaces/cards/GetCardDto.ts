@@ -5,4 +5,4 @@ export interface GetCardParams extends ParamsDictionary {
     id: string;
 }
 
-export const getCardValidation = [param("id").isInt().toInt()];
+export const getCardValidation = [param("id").isInt({ min: 1, max: 2147483647 }).toInt()];
