@@ -1,5 +1,5 @@
 import envVars from '../utils/envVars';
-import User from '../schemes/User';
+import User, { UserRole } from '../schemes/User';
 
 interface GithubTokenResponse {
     access_token?: string;
@@ -59,17 +59,24 @@ class AuthService {
 
         const ghUser = (await userRes.json()) as GithubUser;
 
-        const [user] = await User.upsert(
-            {
-                githubId: String(ghUser.id),
-                username: ghUser.login,
-                displayName: ghUser.name || ghUser.login,
-                avatarUrl: ghUser.avatar_url,
-            },
-            { conflictFields: ['githubId'] },
-        );
+        const githubId = String(ghUser.id);
+        const profile = {
+            username: ghUser.login,
+            displayName: ghUser.name || ghUser.login,
+            avatarUrl: ghUser.avatar_url,
+        };
 
-        return user;
+        const existingUser = await User.findOne({ where: { githubId } });
+
+        if (existingUser) {
+            return existingUser.update(profile);
+        }
+
+        return User.create({
+            githubId,
+            ...profile,
+            role: ghUser.login === envVars().ADMIN_USERNAME ? UserRole.ADMIN : UserRole.USER,
+        });
     }
 }
 

@@ -9,6 +9,7 @@ const envSchema = z.object({
     GITHUB_CALLBACK_URL: z.string().min(1),
     JWT_SECRET: z.string().min(1),
     FRONTEND_URL: z.string().min(1),
+    ADMIN_USERNAME: z.string().min(1),
 });
 
 const parsed = envSchema.safeParse(process.env);
@@ -29,6 +30,7 @@ function envVars() {
         GITHUB_CALLBACK_URL: env.GITHUB_CALLBACK_URL,
         JWT_SECRET: env.JWT_SECRET,
         FRONTEND_URL: env.FRONTEND_URL,
+        ADMIN_USERNAME: env.ADMIN_USERNAME,
     };
 }
 
