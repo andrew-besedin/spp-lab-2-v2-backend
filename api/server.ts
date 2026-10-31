@@ -13,6 +13,7 @@ import './schemes/associations';
 import authRouter from './routes/auth.route';
 import cardsRouter from './routes/cards.route';
 import usersRouter from './routes/users.route';
+import adminRouter from './routes/admin.route';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -43,6 +44,7 @@ export async function startApp() {
     apiServer.use('/auth', authRouter);
     apiServer.use('/cards', cardsRouter);
     apiServer.use('/users', usersRouter);
+    apiServer.use('/admin', adminRouter);
 
     server.listen(envVars().PORT, () => {
         console.log(`> API server ready on http://localhost:${envVars().PORT}`);

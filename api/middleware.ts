@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import { verifyToken } from './utils/jwt';
-import User from './schemes/User';
+import User, { UserRole } from './schemes/User';
 
 class Middleware {
     validator(req: Request, res: Response, next: NextFunction) {
@@ -37,6 +37,17 @@ class Middleware {
         req.user = user;
         next();
     };
+
+    requireRole =
+        (...roles: UserRole[]) =>
+        (req: Request, res: Response, next: NextFunction) => {
+            if (!req.user || !roles.includes(req.user.role)) {
+                res.status(403).json({ success: false, data: 'FORBIDDEN' });
+                return;
+            }
+
+            next();
+        };
 }
 
 const middleware = new Middleware();
