@@ -50,7 +50,7 @@ User.init(
             type: DataTypes.ENUM(...Object.values(UserRole)),
             allowNull: false,
             defaultValue: UserRole.USER,
-        }
+        },
     },
     {
         sequelize,

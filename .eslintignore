@@ -17,3 +17,6 @@ static/
 .idea/
 
 .env*
+.eslintrc.cjs
+prettier.config.mjs
+config/

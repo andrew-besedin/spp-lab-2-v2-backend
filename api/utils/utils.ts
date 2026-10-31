@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 
 export function tryCatch<P = unknown, ResBody = unknown, ReqBody = unknown, ReqQuery = unknown>(
-    fn: (req: Request<P, ResBody, ReqBody, ReqQuery>, res: Response) => Promise<any>,
+    fn: (req: Request<P, ResBody, ReqBody, ReqQuery>, res: Response) => Promise<unknown>,
     cleanup?: () => Promise<void>,
 ) {
     return async function (req: Request<P, ResBody, ReqBody, ReqQuery>, res: Response) {
@@ -14,7 +14,9 @@ export function tryCatch<P = unknown, ResBody = unknown, ReqBody = unknown, ReqQ
                 data: 'INTERNAL_SERVER_ERROR',
             });
         } finally {
-            cleanup && (await cleanup());
+            if (cleanup) {
+                await cleanup();
+            }
         }
     };
 }

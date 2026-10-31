@@ -1,8 +1,7 @@
 import User, { UserRole } from '../schemes/User';
 import { AssignableRole } from '../interfaces/admin/UpdateUserRoleDto';
-
-export class UserNotFoundError extends Error {}
-export class AdminRoleLockedError extends Error {}
+import UserNotFoundError from '../errors/UserNotFoundError';
+import AdminRoleLockedError from '../errors/AdminRoleLockedError';
 
 const ADMIN_USER_ATTRIBUTES = ['id', 'username', 'displayName', 'avatarUrl', 'role', 'createdAt'];
 

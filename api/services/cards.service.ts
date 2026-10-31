@@ -8,10 +8,9 @@ import { canTransition, ColumnStatus, COLUMN_ORDER } from '../utils/columns';
 import { canManageCard } from '../utils/permissions';
 import { CreateCardDto } from '../interfaces/cards/CreateCardDto';
 import { UpdateCardDto } from '../interfaces/cards/UpdateCardDto';
-
-export class CardNotFoundError extends Error {}
-export class InvalidTransitionError extends Error {}
-export class CardForbiddenError extends Error {}
+import CardNotFoundError from '../errors/CardNotFoundError';
+import InvalidTransitionError from '../errors/InvalidTransitionError';
+import CardForbiddenError from '../errors/CardForbiddenError';
 
 const USER_ATTRIBUTES = ['id', 'username', 'displayName', 'avatarUrl'];
 

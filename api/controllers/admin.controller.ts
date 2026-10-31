@@ -1,4 +1,6 @@
-import adminService, { AdminRoleLockedError, UserNotFoundError } from '../services/admin.service';
+import adminService from '../services/admin.service';
+import AdminRoleLockedError from '../errors/AdminRoleLockedError';
+import UserNotFoundError from '../errors/UserNotFoundError';
 import { UpdateUserRoleDto, UpdateUserRoleParams } from '../interfaces/admin/UpdateUserRoleDto';
 import { tryCatch } from '../utils/utils';
 

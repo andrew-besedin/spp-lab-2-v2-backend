@@ -1,8 +1,7 @@
-import cardsService, {
-    CardForbiddenError,
-    CardNotFoundError,
-    InvalidTransitionError,
-} from '../services/cards.service';
+import cardsService from '../services/cards.service';
+import CardForbiddenError from '../errors/CardForbiddenError';
+import CardNotFoundError from '../errors/CardNotFoundError';
+import InvalidTransitionError from '../errors/InvalidTransitionError';
 import { CreateCardDto } from '../interfaces/cards/CreateCardDto';
 import { UpdateCardDto, UpdateCardParams } from '../interfaces/cards/UpdateCardDto';
 import { AddCommentDto, AddCommentParams } from '../interfaces/cards/AddCommentDto';

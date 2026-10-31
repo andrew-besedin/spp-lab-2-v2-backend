@@ -20,8 +20,8 @@ async function initdb() {
 
     try {
         await pool.query(`CREATE DATABASE "${process.env.PGDATABASE}" `);
-    } catch (error: any) {
-        if (error.code === '42P04') {
+    } catch (error) {
+        if ((error as { code?: string }).code === '42P04') {
             console.log('Database already exists, skipping creation');
         } else {
             throw error;

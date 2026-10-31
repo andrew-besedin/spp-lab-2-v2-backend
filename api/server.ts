@@ -7,7 +7,6 @@ import { fileURLToPath } from 'node:url';
 import initdb from './database';
 import sequelize from './sequelize';
 import envVars from './utils/envVars';
-import middleware from './middleware';
 import debugFn from './debug';
 import './schemes/associations';
 import authRouter from './routes/auth.route';
