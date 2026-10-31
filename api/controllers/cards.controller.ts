@@ -1,4 +1,8 @@
-import cardsService, { CardNotFoundError, InvalidTransitionError } from '../services/cards.service';
+import cardsService, {
+    CardForbiddenError,
+    CardNotFoundError,
+    InvalidTransitionError,
+} from '../services/cards.service';
 import { CreateCardDto } from '../interfaces/cards/CreateCardDto';
 import { UpdateCardDto, UpdateCardParams } from '../interfaces/cards/UpdateCardDto';
 import { AddCommentDto, AddCommentParams } from '../interfaces/cards/AddCommentDto';
@@ -29,11 +33,16 @@ class CardsController {
 
     update = tryCatch<UpdateCardParams, unknown, UpdateCardDto>(async (req, res) => {
         try {
-            const card = await cardsService.update(Number(req.params.id), req.body, req.user!.id);
+            const card = await cardsService.update(Number(req.params.id), req.body, req.user!);
             res.status(200).json({ success: true, data: card });
         } catch (err) {
             if (err instanceof CardNotFoundError) {
                 res.status(404).json({ success: false, data: 'CARD_NOT_FOUND' });
+                return;
+            }
+
+            if (err instanceof CardForbiddenError) {
+                res.status(403).json({ success: false, data: 'FORBIDDEN' });
                 return;
             }
 

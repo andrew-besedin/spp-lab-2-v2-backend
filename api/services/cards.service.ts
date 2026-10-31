@@ -5,11 +5,13 @@ import Comment from '../schemes/Comment';
 import ActivityLog, { ActivityAction } from '../schemes/ActivityLog';
 import User from '../schemes/User';
 import { canTransition, ColumnStatus, COLUMN_ORDER } from '../utils/columns';
+import { canManageCard } from '../utils/permissions';
 import { CreateCardDto } from '../interfaces/cards/CreateCardDto';
 import { UpdateCardDto } from '../interfaces/cards/UpdateCardDto';
 
 export class CardNotFoundError extends Error {}
 export class InvalidTransitionError extends Error {}
+export class CardForbiddenError extends Error {}
 
 const USER_ATTRIBUTES = ['id', 'username', 'displayName', 'avatarUrl'];
 
@@ -139,14 +141,19 @@ class CardsService {
         return Card.findByPk(cardId, { include: CARD_INCLUDE });
     }
 
-    async update(id: number, data: UpdateCardDto, userId: number) {
+    async update(id: number, data: UpdateCardDto, user: User) {
         const { title, description, priority, assigneeId, status, position } = data;
+        const userId = user.id;
 
         const cardId = await sequelize.transaction(async (transaction) => {
             const card = await Card.findByPk(id, { transaction });
 
             if (!card) {
                 throw new CardNotFoundError();
+            }
+
+            if (!canManageCard(user, card)) {
+                throw new CardForbiddenError();
             }
 
             if (priority !== undefined && priority !== card.priority) {
